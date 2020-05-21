@@ -1,4 +1,3 @@
-var userService = require('../user/userService');
 var jwt = require('jsonwebtoken');
 var request = require('request');
 
