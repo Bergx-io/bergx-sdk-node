@@ -114,8 +114,16 @@ class BergxSDK {
         },
         (error, response, body) => {
           if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            const info: T = JSON.parse(body);
-            resolve(info);
+            let res: any = JSON.parse(body);
+            const info: T = res;
+            if (res.eventIds || res.eventId) {
+              // We updated the database and need to wait for it to propigate
+              return this.listenForEventCompletion(res.eventIds || [res.eventId]).then(() => {
+                return info;
+              });
+            } else {
+              resolve(info);
+            }
           } else {
             reject(body);
           }
@@ -123,6 +131,10 @@ class BergxSDK {
       });
       return defer;
     });
+  }
+
+  public listenForEventCompletion(eventIds: string[]): Promise<any> {
+    return this.fetchClientData(`/api/v1/events`, 'POST', {events: eventIds});
   }
 
   public clientSecretRequest<T>(url: string, method: string, data?: any): Promise<T> {
