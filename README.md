@@ -33,8 +33,8 @@ const createRes = await bx.createSwitch({
 	type: "basic",
 	value: "true"
 });
-const res = await bx.checkSwitch('awesome-feature', {username: 'cool guy'});
-console.log(res); // { status: 'success', value: true }
+const awesomeFeature = await bx.checkSwitch('awesome-feature', {username: 'cool guy'});
+console.log(awesomeFeature); // true
 ```
 
 ## API

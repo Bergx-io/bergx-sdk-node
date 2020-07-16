@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import request from 'request';
 import Debug from 'debug';
 
+const fetch = require('cross-fetch');
 const debug = Debug('bergxSDK:all');
 
 class BergxSDK {
@@ -11,6 +11,8 @@ class BergxSDK {
   private updateAccessTokenCallback: (userSub: string, newAccessToken: string) => void = this.updateAccessTokenWarning.bind(this);
 
   private clientAccessToken: string | null = null;
+
+  private fetch = fetch;
 
   constructor(config: BxConfig) {
 
@@ -78,58 +80,41 @@ class BergxSDK {
 
   public fetchUserData<T>(accessToken: string, refreshToken: string, url: string, method: string, data?: any): Promise<T> {
     return this.checkAccessToken(accessToken, refreshToken).then((validAccessToken: string) => {
-      let defer: Promise<T> = new Promise((resolve, reject) => {
-        request({
-          url: `${this.host}${url}`,
-          method: method,
-          form: data,
-          headers: {
-            'Authorization': `Bearer ${validAccessToken}`
-          }
-        }, (error, response, body) => {
-          if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            const info: T = JSON.parse(body);
-            resolve(info);
-          } else {
-            reject(body);
-          }
-        });
+      return this.fetch(`${this.host}${url}`, {
+        method: method,
+        body: !!data ? JSON.stringify(data) : null,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${validAccessToken}`
+        }
+      }).then((res: any) => res.json())
+      .then((json: any) => {
+        const info: T = JSON.parse(json);
+        return info;
       });
-      return defer;
     });
   }
 
   public fetchClientData<T>(url: string, method: string, data?: any): Promise<T> {
     return this.checkClientAccessToken().then((validAccessToken: string) => {
-      var defer: Promise<T> = new Promise((resolve, reject) => {
-        request({
-          url: `${this.host}${url}`,
-          method: method,
-          form: {
-            ...data
-          },
-          headers: {
-            'Authorization': `Bearer ${validAccessToken}`
-          }
+      return this.fetch(`${this.host}${url}`, {
+        method: method,
+        body: !!data ? JSON.stringify(data) : null,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${validAccessToken}`
         },
-        (error, response, body) => {
-          if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            let res: any = JSON.parse(body);
-            const info: T = res;
-            if (res.eventIds || res.eventId) {
-              // We updated the database and need to wait for it to propigate
-              return this.listenForEventCompletion(res.eventIds || [res.eventId]).then(() => {
-                return info;
-              });
-            } else {
-              resolve(info);
-            }
-          } else {
-            reject(body);
-          }
-        });
+      }).then((res: any) => res.json())
+      .then((json: any) => {
+        const info: T = json;
+        if (json.eventIds || json.eventId) {
+          return this.listenForEventCompletion(json.eventIds || [json.eventId]).then(() => {
+            return info;
+          });
+        } else {
+          return info;
+        }
       });
-      return defer;
     });
   }
 
@@ -138,26 +123,21 @@ class BergxSDK {
   }
 
   public clientSecretRequest<T>(url: string, method: string, data?: any): Promise<T> {
-    var defer: Promise<T> = new Promise((resolve, reject) => {
-      request({
-        url: `${this.host}${url}`,
-        method: method,
-        form: {
-          ...data,
-          client_id: this.clientId,
-          client_secret: this.clientSecret,
-        }
+    return this.fetch(`${this.host}${url}`, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
       },
-      (error, response, body) => {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-          const info = JSON.parse(body);
-          resolve((info as T));
-        } else {
-          reject(body);
-        }
-      });
+      body: JSON.stringify({
+        ...data,
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+      })
+    }).then((res: any) => res.json())
+    .then((json: any) => {
+      const info: T = json;
+      return info;
     });
-    return defer;
   }
 
   private isAccessTokenExpired(accessToken: string) {
@@ -192,12 +172,16 @@ class BergxSDK {
     return this.fetchClientData(`/api/v1/switches/`, 'POST', data);
   }
 
-  public checkSwitch(switchName: string, ctx: Context) {
-    return this.fetchClientData(`/api/v1/switches/check/${switchName}`, 'POST', ctx);
+  public checkSwitch(switchName: string, ctx: Context): Promise<boolean> {
+    return this.fetchClientData<{status: string, value: boolean}>(`/api/v1/switches/check/${switchName}`, 'POST', ctx).then((response: {status: string, value: boolean}) => {
+      return response.value;
+    });
   }
 
-  public checkAllSwitches(ctx: Context) {
-    return this.fetchClientData(`/api/v1/switches/check/all`, 'POST', ctx);
+  public checkAllSwitches(ctx: Context={}): Promise<{[key: string]: boolean}> {
+    return this.fetchClientData<AllSwitchResponse>(`/api/v1/switches/check/all`, 'POST', ctx).then((response: AllSwitchResponse) => {
+      return response.switches;
+    });
   }
 
   public updateSwitch(switchName: string, data: Partial<SwitchDefinition>) {
@@ -302,6 +286,11 @@ interface ArmDefinition {
 
 interface TryResponse {
   armName: string;
+}
+
+interface AllSwitchResponse {
+  status: string;
+  switches: {[key: string]: boolean};
 }
 
 export default BergxSDK;
