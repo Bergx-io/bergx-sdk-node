@@ -272,7 +272,7 @@ interface CohortDefinition {
   totalTries: number;
   totalWins: number;
   randomSelections: number;
-  epsilon: number;
+  percentage: number;
   resetFrequency: number; // TODO: figure out the best way to do this
   arms: ArmDefinition[];
 }
