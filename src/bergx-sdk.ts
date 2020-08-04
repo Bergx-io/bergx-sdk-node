@@ -89,7 +89,7 @@ class BergxSDK {
         }
       }).then((res: any) => res.json())
       .then((json: any) => {
-        const info: T = JSON.parse(json);
+        const info: T = json;
         return info;
       });
     });
@@ -220,6 +220,26 @@ class BergxSDK {
   public resetBanditCohort(cohortId: string) {
     return this.fetchClientData(`/api/v1/bandit/cohort/${cohortId}/reset`, 'POST');
   }
+
+  public accessList() {
+    return this.fetchClientData(`/api/v1/access/list`, 'GET');
+  }
+
+  public createAccessGrant(grant: AuthorizationConfig) {
+    return this.fetchClientData(`/api/v1/access/create`, 'POST', grant);
+  }
+
+  public getAccessMetaData(userId: string) {
+    return this.fetchClientData(`/api/v1/access/metadata/${userId}`, 'GET');
+  }
+
+  public updateAccessMetaData(userId: string, data: {[key: string]: any}) {
+    return this.fetchClientData(`/api/v1/access/metadata/${userId}`, 'POST', data);
+  }
+
+  public checkAccess(user: BxUser, ctx: {[key: string]: any}) {
+    return this.fetchUserData(user.accessToken, user.refreshToken, `/api/v1/access/me`, 'POST', ctx);
+  }
 }
 
 interface BxConfig {
@@ -291,6 +311,21 @@ interface TryResponse {
 interface AllSwitchResponse {
   status: string;
   switches: {[key: string]: boolean};
+}
+
+interface AuthorizationConfig {
+  name: string;
+  orgId?: string; // will be added based on your client token
+  appId?: string; // will be added based on your client token
+  rules: GrantRule[];
+}
+
+interface GrantRule {
+  attribute: string; // key to use when looking up the value in the context
+  operator: string; // operation to test the value against
+  value?: string; // optional value to compare against the context value
+  valueAttribute?: string; // optional value to lookup in the context in order to evaluate the rule against.
+  andRule?: GrantRule[];
 }
 
 export default BergxSDK;

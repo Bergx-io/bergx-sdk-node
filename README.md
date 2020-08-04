@@ -159,3 +159,29 @@ const user = await bx.getProfile({
 #### updateProfile(user: BxUser, data: BxUserClaims)
 
 Updates the user profile in Bergx. Requires a user's `accessToken`.
+
+Example response:
+```json
+{
+  "status": "success",
+  "user": {
+    "claims": {
+      "email": "testUser@example.com",
+      "updated_at": 1588647477,
+      "preferred_username": "testUser",
+      "sub": "{{uuid}}",
+      "email_verified": true
+    },
+    "organizations": []
+  }
+}
+```
+
+Usage:
+
+```typescript
+const user = await bx.getProfile({
+  accessToken,
+  refreshToken
+});
+```
