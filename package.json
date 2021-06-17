@@ -1,5 +1,5 @@
 {
-  "name": "bergx-sdk",
+  "name": "@bergx/bergx-sdk",
   "version": "1.0.0",
   "description": "A software development kit for interacting with the Bergx services. See https://www.bergx.io for more information.",
   "main": "dist/bergx-sdk.js",
@@ -35,5 +35,12 @@
   "devDependencies": {
     "typescript": "^3.9.3"
   },
-  "repository": "git://github.com/Bergx-io/bergx-sdk-node"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bergx-io/bergx-sdk-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Bergx-io/bergx-sdk-node/issues"
+  },
+  "homepage": "https://github.com/Bergx-io/bergx-sdk-node#readme"
 }

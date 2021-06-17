@@ -14,9 +14,9 @@ Bergx is a set of modules to get you moving quickly on your next project.
 Create an account here: https://www.bergx.io Just follow the quick start to create an organization and an application. You will need to create a client in order to interact with the API.
 
 ```bash
-npm install bergx-sdk
+npm install @bergx/bergx-sdk
 # or
-yarn add bergx-sdk
+yarn add @bergx/bergx-sdk
 ```
 
 ### Usage
