@@ -331,14 +331,16 @@ interface GrantRule {
 export default BergxSDK;
 
 export {
+  ArmDefinition,
+  AuthorizationConfig,
   BxConfig,
   BxUser,
   BxUserClaims,
-  Rule,
-  RolloutRule,
-  SwitchDefinition,
-  Context,
   CohortDefinition,
-  ArmDefinition,
+  Context,
+  GrantRule,
+  RolloutRule,
+  Rule,
+  SwitchDefinition,
   TryResponse
 }
