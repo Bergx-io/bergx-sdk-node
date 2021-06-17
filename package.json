@@ -24,7 +24,7 @@
     "authorization"
   ],
   "author": "Mason Payne <mason.payne@bergx.io>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "@types/debug": "^4.1.5",
     "@types/jsonwebtoken": "^8.3.8",
